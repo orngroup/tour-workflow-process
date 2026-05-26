@@ -1,0 +1,549 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#1A2332;--orange:#C9682F;--amber:#BA7517;
+  --c-sales-bg:#EAF3DE;--c-sales-bd:#3B6D11;--c-sales-tx:#27500A;
+  --c-book-bg:#E6F1FB;--c-book-bd:#185FA5;--c-book-tx:#0C447C;
+  --c-visa-bg:#FAEEDA;--c-visa-bd:#854F0B;--c-visa-tx:#633806;
+  --c-fin-bg:#FBEAF0;--c-fin-bd:#993556;--c-fin-tx:#72243E;
+  --c-ops-bg:#EEEDFE;--c-ops-bd:#534AB7;--c-ops-tx:#3C3489;
+  --c-tick-bg:#E1F5EE;--c-tick-bd:#0F6E56;--c-tick-tx:#085041;
+  --c-gate-bg:#FCEBEB;--c-gate-bd:#A32D2D;--c-gate-tx:#791F1F;
+  --c-warn-bg:#FAEEDA;--c-warn-bd:#854F0B;--c-warn-tx:#633806;
+  --step-h:72px;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --c-sales-bg:#173404;--c-sales-bd:#97C459;--c-sales-tx:#C0DD97;
+    --c-book-bg:#042C53;--c-book-bd:#85B7EB;--c-book-tx:#B5D4F4;
+    --c-visa-bg:#412402;--c-visa-bd:#EF9F27;--c-visa-tx:#FAC775;
+    --c-fin-bg:#4B1528;--c-fin-bd:#ED93B1;--c-fin-tx:#F4C0D1;
+    --c-ops-bg:#26215C;--c-ops-bd:#AFA9EC;--c-ops-tx:#CECBF6;
+    --c-tick-bg:#04342C;--c-tick-bd:#5DCAA5;--c-tick-tx:#9FE1CB;
+    --c-gate-bg:#501313;--c-gate-bd:#F09595;--c-gate-tx:#F7C1C1;
+    --c-warn-bg:#412402;--c-warn-bd:#EF9F27;--c-warn-tx:#FAC775;
+  }
+}
+body{font-family:var(--font-sans,"Anthropic Sans",sans-serif);color:var(--color-text-primary)}
+
+.wrap{max-width:900px;margin:0 auto;padding:0 0 2rem}
+
+.header{padding:1.5rem 1rem 1rem;border-bottom:.5px solid var(--color-border-tertiary);margin-bottom:1.5rem}
+.header h1{font-size:18px;font-weight:500;margin-bottom:.25rem}
+.header p{font-size:13px;color:var(--color-text-secondary)}
+
+.legend{display:flex;flex-wrap:wrap;gap:8px;padding:.75rem 1rem;margin-bottom:1.5rem;border:.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md)}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:500}
+.leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.leg-sales{background:var(--c-sales-bd)}.leg-book{background:var(--c-book-bd)}.leg-visa{background:var(--c-visa-bd)}
+.leg-fin{background:var(--c-fin-bd)}.leg-ops{background:var(--c-ops-bd)}.leg-tick{background:var(--c-tick-bd)}
+.leg-gate{background:var(--c-gate-bd)}.leg-multi{background:linear-gradient(135deg,var(--c-sales-bd) 50%,var(--c-ops-bd) 50%)}
+
+.phase-label{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-tertiary);padding:.25rem 1rem .5rem;margin-top:.5rem}
+
+.step{display:grid;grid-template-columns:28px 1fr auto;gap:0;align-items:stretch;margin-bottom:2px;padding:0 1rem}
+.step-num{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--color-text-tertiary);padding-right:8px;flex-shrink:0;padding-top:12px;align-self:flex-start}
+.step-body{border:.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:.6rem .75rem;position:relative;cursor:pointer;transition:border-color .15s}
+.step-body:hover{border-color:var(--color-border-secondary)}
+.step-title{font-size:13px;font-weight:500;margin-bottom:2px}
+.step-sub{font-size:12px;color:var(--color-text-secondary);line-height:1.4}
+.step-dept{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:500;padding:2px 7px;border-radius:99px;margin-top:4px;border:.5px solid currentColor}
+.step-dept.sales{background:var(--c-sales-bg);color:var(--c-sales-tx);border-color:var(--c-sales-bd)}
+.step-dept.book{background:var(--c-book-bg);color:var(--c-book-tx);border-color:var(--c-book-bd)}
+.step-dept.visa{background:var(--c-visa-bg);color:var(--c-visa-tx);border-color:var(--c-visa-bd)}
+.step-dept.fin{background:var(--c-fin-bg);color:var(--c-fin-tx);border-color:var(--c-fin-bd)}
+.step-dept.ops{background:var(--c-ops-bg);color:var(--c-ops-tx);border-color:var(--c-ops-bd)}
+.step-dept.tick{background:var(--c-tick-bg);color:var(--c-tick-tx);border-color:var(--c-tick-bd)}
+
+.connector{display:flex;align-items:center;padding:0 1rem 0 calc(1rem + 28px);height:14px}
+.connector-line{width:1px;height:14px;background:var(--color-border-tertiary);margin-left:calc(.75rem + 1px)}
+
+.gate{margin:6px 1rem;border-radius:var(--border-radius-md);overflow:hidden}
+.gate-header{display:flex;align-items:center;gap:8px;padding:.5rem .75rem;cursor:pointer;user-select:none}
+.gate-title{font-size:12px;font-weight:500;flex:1}
+.gate-badge{font-size:10px;padding:2px 6px;border-radius:99px;font-weight:500}
+.gate-body{padding:.5rem .75rem;font-size:12px;line-height:1.6;border-top:.5px solid rgba(0,0,0,.08)}
+.gate-body ul{padding-left:1rem}
+.gate-body li{margin-bottom:2px}
+
+.gate-stop{background:var(--c-gate-bg);border:.5px solid var(--c-gate-bd)}
+.gate-stop .gate-header{color:var(--c-gate-tx)}
+.gate-stop .gate-badge{background:var(--c-gate-bd);color:#fff}
+.gate-stop .gate-body{color:var(--c-gate-tx)}
+
+.gate-warn{background:var(--c-warn-bg);border:.5px solid var(--c-warn-bd)}
+.gate-warn .gate-header{color:var(--c-warn-tx)}
+.gate-warn .gate-badge{background:var(--c-warn-bd);color:#fff}
+.gate-warn .gate-body{color:var(--c-warn-tx)}
+
+.gate-pass{background:var(--c-tick-bg);border:.5px solid var(--c-tick-bd)}
+.gate-pass .gate-header{color:var(--c-tick-tx)}
+.gate-pass .gate-badge{background:var(--c-tick-bd);color:#fff}
+.gate-pass .gate-body{color:var(--c-tick-tx)}
+
+.gate-chevron{font-size:12px;transition:transform .2s}
+.gate-chevron.open{transform:rotate(90deg)}
+
+.multi-dept{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+
+.phase-block{border-left:2px solid var(--color-border-tertiary);margin:1rem 1rem 1rem calc(1rem + 28px);padding-left:.75rem}
+.phase-name{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem}
+.parallel-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.parallel-step{border:.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:.5rem .6rem;font-size:12px}
+.parallel-step .step-title{font-size:12px;margin-bottom:2px}
+.parallel-note{font-size:11px;color:var(--color-text-tertiary);text-align:center;margin-top:4px;font-style:italic}
+
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:.75rem 1rem;margin:1rem 0;background:var(--color-background-secondary);border-radius:var(--border-radius-md)}
+.kpi{text-align:center}
+.kpi-val{font-size:20px;font-weight:500;display:block}
+.kpi-lbl{font-size:11px;color:var(--color-text-secondary)}
+
+.final-rule{margin:1rem 1rem 0;padding:.75rem;background:var(--navy);border-radius:var(--border-radius-md);color:#fff;font-size:12px;line-height:1.6;text-align:center}
+.final-rule strong{color:#FBBF24}
+
+.hidden{display:none}
+</style>
+
+<div class="wrap">
+<h2 class="sr-only">ORN tour booking workflow — end-to-end process from enquiry to departure, showing all gates and department responsibilities</h2>
+
+<div class="header">
+  <h1>ORN tour booking — end-to-end workflow</h1>
+  <p>From first enquiry to departure · All gates, pauses, and error states · Edition I, MMXXVI</p>
+</div>
+
+<div class="legend">
+  <div class="leg-item"><div class="leg-dot leg-sales"></div>Sales</div>
+  <div class="leg-item"><div class="leg-dot leg-book"></div>Booking Owner</div>
+  <div class="leg-item"><div class="leg-dot leg-fin"></div>Finance</div>
+  <div class="leg-item"><div class="leg-dot leg-visa"></div>Visa</div>
+  <div class="leg-item"><div class="leg-dot leg-tick"></div>Ticketing</div>
+  <div class="leg-item"><div class="leg-dot leg-ops"></div>Operations</div>
+  <div class="leg-item"><div class="leg-dot leg-gate" style="border-radius:3px"></div>Hard gate — file paused</div>
+  <div class="leg-item"><div class="leg-dot leg-warn" style="border-radius:3px"></div>Warning gate — escalation required</div>
+</div>
+
+<div class="kpi-row">
+  <div class="kpi"><span class="kpi-val">5</span><span class="kpi-lbl">Payment gates</span></div>
+  <div class="kpi"><span class="kpi-val">12</span><span class="kpi-lbl">Mandatory fields</span></div>
+  <div class="kpi"><span class="kpi-val">27</span><span class="kpi-lbl">Policy sections</span></div>
+  <div class="kpi"><span class="kpi-val">14</span><span class="kpi-lbl">Disclosure items</span></div>
+</div>
+
+<!-- PHASE 1 -->
+<div class="phase-label">Phase 1 — Enquiry & sale</div>
+
+<div class="step" onclick="toggleDetail('d1')">
+  <div class="step-num">1</div>
+  <div class="step-body" id="s1">
+    <div class="step-title">Customer enquiry received</div>
+    <div class="step-sub">WhatsApp, call, walk-in, agent referral — not a booking</div>
+    <div class="step-dept sales">Sales</div>
+    <div id="d1" class="hidden" style="margin-top:8px;font-size:12px;color:var(--color-text-secondary);line-height:1.5">
+      An enquiry, verbal interest, or partial interest is <strong>not</strong> a confirmed booking. No system entry, no commitment, no inventory block at this stage.
+    </div>
+  </div>
+</div>
+<div class="connector"><div class="connector-line"></div></div>
+
+<div class="step" onclick="toggleDetail('d2')">
+  <div class="step-num">2</div>
+  <div class="step-body">
+    <div class="step-title">Ground reality disclosure</div>
+    <div class="step-sub">Hotels, rooms, meals, transfers, group discipline — disclosed before payment</div>
+    <div class="step-dept sales">Sales</div>
+    <div id="d2" class="hidden" style="margin-top:8px;font-size:12px;color:var(--color-text-secondary);line-height:1.5">
+      Covers: hotel may be outside city centre · room types limited to single/twin/double/triple · triples may include extra/sofa bed · meals may be packed · transfers are common group · group timings are fixed · walking involved. Must be acknowledged and recorded before Step 3.
+    </div>
+  </div>
+</div>
+<div class="connector"><div class="connector-line"></div></div>
+
+<div class="gate gate-stop" onclick="toggleGate(this)">
+  <div class="gate-header">
+    <i class="ti ti-ban" style="font-size:14px"></i>
+    <div class="gate-title">Gate A — Disclosure gate</div>
+    <span class="gate-badge">Hard stop</span>
+    <span class="gate-chevron">›</span>
+  </div>
+  <div class="gate-body hidden">
+    <strong>Condition:</strong> Ground reality acknowledgement must be signed/recorded by every traveller before any payment is accepted.<br>
+    <strong>If failed:</strong> Booking Owner may not proceed. Disc. not complete = file not quality-cleared. Sales-side failure, not Ops problem.
+  </div>
+</div>
+
+<div class="connector"><div class="connector-line"></div></div>
+
+<div class="step" onclick="toggleDetail('d3')">
+  <div class="step-num">3</div>
+  <div class="step-body">
+    <div class="step-title">Package selection & pricing locked</div>
+    <div class="step-sub">Departure date · package version · inclusions in writing · discount recorded</div>
+    <div class="step-dept sales">Sales</div>
+    <div id="d3" class="hidden" style="margin-top:8px;font-size:12px;color:var(--color-text-secondary);line-height:1.5">
+      Rule: No recorded discount = no discount. No written inclusion = no commitment. Package version locked — no amendments without change-control process (§17).
+    </div>
+  </div>
+</div>
+<div class="connector"><div class="connector-line"></div></div>
+
+<!-- PHASE 2 -->
+<div class="phase-label">Phase 2 — Booking confirmation</div>
+
+<div class="step" onclick="toggleDetail('d4')">
+  <div class="step-num">4</div>
+  <div class="step-body">
+    <div class="step-title">Booking amount collected — Gate B</div>
+    <div class="step-sub">Booking deposit received · Booking Owner assigned · file opened in system</div>
+    <div class="multi-dept" style="padding:0 0 0 28px">
+      <div class="step-dept sales">Sales</div>
+      <div class="step-dept fin">Finance</div>
+      <div class="step-dept book">Booking Owner</div>
+    </div>
+    <div id="d4" class="hidden" style="margin-top:8px;font-size:12px;color:var(--color-text-secondary);line-height:1.5">
+      Payment Gate B: booking amount received → file may be created. One named Booking Owner assigned and recorded. Ownership does not transfer informally.
+    </div>
+  </div>
+</div>
+<div class="connector"><div class="connector-line"></div></div>
+
+<div class="gate gate-stop" onclick="toggleGate(this)">
+  <div class="gate-header">
+    <i class="ti ti-ban" style="font-size:14px"></i>
+    <div class="gate-title">Gate B — Booking gate</div>
+    <span class="gate-badge">Hard stop</span>
+    <span class="gate-chevron">›</span>
+  </div>
+  <div class="gate-body hidden">
+    <ul>
+      <li>Booking amount received (mandatory)</li>
+      <li>Passenger names as per passport (mandatory)</li>
+      <li>Passport copies collected (mandatory)</li>
+      <li>Departure date selected (mandatory)</li>
+      <li>Package version locked (mandatory)</li>
+      <li>Rooming type recorded (mandatory)</li>
+      <li>Payment schedule communicated (mandatory)</li>
+      <li>Visa requirement explained (mandatory)</li>
+      <li>Cancellation terms shared (mandatory)</li>
+      <li>Discount/special price recorded if any (mandatory)</li>
+    </ul>
+    <br><strong>If any item missing:</strong> File status = "Incomplete Booking" — NOT "Operationally Ready". Payment alone ≠ confirmed booking.
+  </div>
+</div>
+<div class="connector"><div class="connector-line"></div></div>
+
+<div class="step" onclick="toggleDetail('d5')">
+  <div class="step-num">5</div>
+  <div class="step-body">
+    <div class="step-title">Customer data collection complete</div>
+    <div class="step-sub">Full passport · DOB · PAN · rooming · meals · emergency contact · agent details</div>
+    <div class="step-dept book">Booking Owner</div>
+    <div id="d5" class="hidden" style="margin-top:8px;font-size:12px;color:var(--color-text-secondary);line-height:1.5">
+      If passport, contact, rooming, visa-relevant data are not collected → booking remains Incomplete. Rule of thumb: two or more "tbd" fields = enquiry with money attached, not a confirmed booking.
+    </div>
+  </div>
+</div>
+<div class="connector"><div class="connector-line"></div></div>
+
+<!-- PHASE 3 — Parallel tracks -->
+<div class="phase-label">Phase 3 — Parallel processing (Visa · Finance · Ticketing)</div>
+
+<div class="phase-block">
+  <div class="phase-name">Three tracks run simultaneously after Gate B clears</div>
+  <div class="parallel-row">
+    <div class="parallel-step">
+      <div class="step-title">Visa track</div>
+      <div class="step-dept visa" style="margin-bottom:4px">Visa dept</div>
+      <div style="font-size:11px;color:var(--color-text-secondary);line-height:1.4">
+        Docs collected → feasibility check → Schengen appointment → application lodged → status tracked
+      </div>
+    </div>
+    <div class="parallel-step">
+      <div class="step-title">Finance track</div>
+      <div class="step-dept fin" style="margin-bottom:4px">Finance</div>
+      <div style="font-size:11px;color:var(--color-text-secondary);line-height:1.4">
+        Visa fee + package deposit collected → receivables tracked → TCS where applicable
+      </div>
+    </div>
+    <div class="parallel-step">
+      <div class="step-title">Ticketing track</div>
+      <div class="step-dept tick" style="margin-bottom:4px">Ticketing</div>
+      <div style="font-size:11px;color:var(--color-text-secondary);line-height:1.4">
+        Name match against passport confirmed → PNR collected → ticketing deposit cleared
+      </div>
+    </div>
+  </div>
+  <div class="parallel-note">All three tracks must clear their gate before handover to Operations</div>
+</div>
+
+<div class="gate gate-stop" onclick="toggleGate(this)">
+  <div class="gate-header">
+    <i class="ti ti-ban" style="font-size:14px"></i>
+    <div class="gate-title">Gate C — Visa gate</div>
+    <span class="gate-badge">Hard stop</span>
+    <span class="gate-chevron">›</span>
+  </div>
+  <div class="gate-body hidden">
+    <strong>Condition:</strong> Visa fee + required package deposit received before visa process may begin.<br>
+    <strong>Late booking rule:</strong> If visa feasibility cannot be confirmed → booking must not proceed for Europe. §08: "No visa feasibility, no late Europe booking."<br>
+    <strong>Escalation trigger:</strong> Passport not in hand at T-45 → escalate to Booking Owner and Ops.
+  </div>
+</div>
+
+<div class="connector"><div class="connector-line"></div></div>
+
+<div class="gate gate-stop" onclick="toggleGate(this)">
+  <div class="gate-header">
+    <i class="ti ti-ban" style="font-size:14px"></i>
+    <div class="gate-title">Gate D — Flight gate</div>
+    <span class="gate-badge">Hard stop</span>
+    <span class="gate-chevron">›</span>
+  </div>
+  <div class="gate-body hidden">
+    <strong>Condition:</strong> Required ticketing deposit received before flights may be sealed.<br>
+    <strong>Name rule:</strong> Flight name must exactly match passport. No deviation. Booking Owner responsible for name match verification.<br>
+    <strong>If flight not sealed by T-30:</strong> Escalation to Ops and management.
+  </div>
+</div>
+
+<div class="connector"><div class="connector-line"></div></div>
+
+<!-- PHASE 4 -->
+<div class="phase-label">Phase 4 — Financial closure</div>
+
+<div class="step" onclick="toggleDetail('d6')">
+  <div class="step-num">6</div>
+  <div class="step-body">
+    <div class="step-title">Supplier gate — Gate E</div>
+    <div class="step-sub">Minimum package collection received · supplier commitments may be protected</div>
+    <div class="multi-dept" style="padding:0 0 0 28px">
+      <div class="step-dept fin">Finance</div>
+      <div class="step-dept book">Booking Owner</div>
+    </div>
+    <div id="d6" class="hidden" style="margin-top:8px;font-size:12px;color:var(--color-text-secondary);line-height:1.5">
+      §06 Rule: Company shall not spend irreversible money before customer has paid the required milestone. No supplier deposits, no hotel blocks, no coach contracts before Gate E clears.
+    </div>
+  </div>
+</div>
+<div class="connector"><div class="connector-line"></div></div>
+
+<div class="gate gate-stop" onclick="toggleGate(this)">
+  <div class="gate-header">
+    <i class="ti ti-ban" style="font-size:14px"></i>
+    <div class="gate-title">Gate E — Final payment gate</div>
+    <span class="gate-badge">Hard stop</span>
+    <span class="gate-chevron">›</span>
+  </div>
+  <div class="gate-body hidden">
+    <strong>Condition:</strong> 100% package amount + TCS + supplements received. Zero dues pending.<br>
+    <strong>Consequence:</strong> No passenger may enter final operations handover with outstanding dues.<br>
+    <strong>Escalation:</strong> Outstanding dues at T-14 → Finance escalates to Booking Owner and management. Repeat offenders → Booking Owner scorecard entry (§25).
+  </div>
+</div>
+
+<div class="connector"><div class="connector-line"></div></div>
+
+<!-- PHASE 5 -->
+<div class="phase-label">Phase 5 — Group strength & freeze</div>
+
+<div class="step" onclick="toggleDetail('d7')">
+  <div class="step-num">7</div>
+  <div class="step-body">
+    <div class="step-title">Group strength review</div>
+    <div class="step-sub">Minimum passenger threshold assessed · departure go/hold/merge decision</div>
+    <div class="multi-dept" style="padding:0 0 0 28px">
+      <div class="step-dept ops">Operations</div>
+      <div class="step-dept sales">Sales</div>
+    </div>
+    <div id="d7" class="hidden" style="margin-top:8px;font-size:12px;color:var(--color-text-secondary);line-height:1.5">
+      §18: Group strength and departure freeze gate. Decision: proceed · hold for more bookings · merge with adjacent departure · cancel. Sales must communicate any change to all passengers immediately.
+    </div>
+  </div>
+</div>
+
+<div class="gate gate-warn" onclick="toggleGate(this)">
+  <div class="gate-header">
+    <i class="ti ti-alert-triangle" style="font-size:14px"></i>
+    <div class="gate-title">Gate F — Freeze gate (warning)</div>
+    <span class="gate-badge">Escalation</span>
+    <span class="gate-chevron">›</span>
+  </div>
+  <div class="gate-body hidden">
+    <strong>Trigger:</strong> Departure below minimum strength at freeze deadline.<br>
+    <strong>Options:</strong> (1) Wait — extend window with risk · (2) Merge with nearest departure · (3) Cancel with full refund process. No option may be selected without management sign-off.<br>
+    <strong>§20 Operational freeze:</strong> Once departure is frozen, no new bookings, no changes without Ops approval.
+  </div>
+</div>
+
+<div class="connector"><div class="connector-line"></div></div>
+
+<!-- PHASE 6 -->
+<div class="phase-label">Phase 6 — Operational freeze & handover</div>
+
+<div class="step" onclick="toggleDetail('d8')">
+  <div class="step-num">8</div>
+  <div class="step-body">
+    <div class="step-title">Operational freeze declared</div>
+    <div class="step-sub">Passenger list locked · no amendments without Ops approval · rooming finalised</div>
+    <div class="step-dept ops">Operations</div>
+    <div id="d8" class="hidden" style="margin-top:8px;font-size:12px;color:var(--color-text-secondary);line-height:1.5">
+      §20: After freeze — rooming final, dietary final, special requests final, optional tours confirmed, agent bookings reconciled. Any change = change-control process with written approval.
+    </div>
+  </div>
+</div>
+<div class="connector"><div class="connector-line"></div></div>
+
+<div class="step" onclick="toggleDetail('d9')">
+  <div class="step-num">9</div>
+  <div class="step-body">
+    <div class="step-title">Sales-to-Operations handover</div>
+    <div class="step-sub">Complete file transferred · Booking Owner accountability ends on Ops acceptance</div>
+    <div class="multi-dept" style="padding:0 0 0 28px">
+      <div class="step-dept book">Booking Owner</div>
+      <div class="step-dept ops">Operations</div>
+    </div>
+    <div id="d9" class="hidden" style="margin-top:8px;font-size:12px;color:var(--color-text-secondary);line-height:1.5">
+      §21 Handover checklist: passenger list with passport · rooming plan · meal & dietary list · flight PNRs · visa status per pax · optionals booked · special requests approved · ground reality acknowledgements on file · payment status = zero dues · agent details if applicable. Operations may refuse handover if file is incomplete.
+    </div>
+  </div>
+</div>
+
+<div class="gate gate-stop" onclick="toggleGate(this)">
+  <div class="gate-header">
+    <i class="ti ti-ban" style="font-size:14px"></i>
+    <div class="gate-title">Gate G — Handover acceptance gate</div>
+    <span class="gate-badge">Hard stop</span>
+    <span class="gate-chevron">›</span>
+  </div>
+  <div class="gate-body hidden">
+    <strong>Ops may reject handover if:</strong>
+    <ul>
+      <li>Any mandatory field missing from passenger file</li>
+      <li>Ground reality acknowledgement not on file</li>
+      <li>Rooming not finalised</li>
+      <li>Outstanding dues exist</li>
+      <li>Visa status unresolved</li>
+      <li>Flight PNR not confirmed</li>
+      <li>Special request not in writing with approval</li>
+    </ul>
+    <strong>Rejected handover = Sales-side failure.</strong> Booking Owner remains accountable until Ops formally accepts.
+  </div>
+</div>
+
+<div class="connector"><div class="connector-line"></div></div>
+
+<!-- PHASE 7 -->
+<div class="phase-label">Phase 7 — Pre-departure</div>
+
+<div class="step" onclick="toggleDetail('d10')">
+  <div class="step-num">10</div>
+  <div class="step-body">
+    <div class="step-title">Voucher & pre-travel briefing released</div>
+    <div class="step-sub">Gate E (zero dues) must be clear before vouchers go out</div>
+    <div class="multi-dept" style="padding:0 0 0 28px">
+      <div class="step-dept ops">Operations</div>
+      <div class="step-dept book">Booking Owner</div>
+    </div>
+    <div id="d10" class="hidden" style="margin-top:8px;font-size:12px;color:var(--color-text-secondary);line-height:1.5">
+      §22: Vouchers may not be released with outstanding dues. Pre-travel briefing repeats ground reality disclosure. Tour Manager receives complete tour file — same standard as Ops handover.
+    </div>
+  </div>
+</div>
+<div class="connector"><div class="connector-line"></div></div>
+
+<div class="step" onclick="toggleDetail('d11')">
+  <div class="step-num">11</div>
+  <div class="step-body">
+    <div class="step-title">Tour Manager file handover</div>
+    <div class="step-sub">Complete tour file · LERMS loaded · no surprises on the road</div>
+    <div class="multi-dept" style="padding:0 0 0 28px">
+      <div class="step-dept ops">Operations</div>
+    </div>
+    <div id="d11" class="hidden" style="margin-top:8px;font-size:12px;color:var(--color-text-secondary);line-height:1.5">
+      TM receives: passenger list · rooming plan · meal list · flight manifests · hotel confirmations · supplier vouchers · LERMS cash load · approved optionals · emergency contacts · special requests. §10 TM Policy governs what happens on the road.
+    </div>
+  </div>
+</div>
+<div class="connector"><div class="connector-line"></div></div>
+
+<div class="step">
+  <div class="step-num"><i class="ti ti-plane-departure" style="font-size:16px;color:var(--c-tick-bd)"></i></div>
+  <div class="step-body" style="border-color:var(--c-tick-bd)">
+    <div class="step-title" style="color:var(--c-tick-tx)">Departure — coach moves</div>
+    <div class="step-sub">All gates cleared · file clean · zero preventable surprises</div>
+    <div class="step-dept tick">Operations + Tour Manager</div>
+  </div>
+</div>
+
+<!-- Error/escalation section -->
+<div class="phase-label" style="margin-top:1.5rem">Error states & escalation triggers</div>
+
+<div class="gate gate-warn" onclick="toggleGate(this)">
+  <div class="gate-header">
+    <i class="ti ti-alert-triangle" style="font-size:14px"></i>
+    <div class="gate-title">Booking error accountability (§23)</div>
+    <span class="gate-badge">Escalation</span>
+    <span class="gate-chevron">›</span>
+  </div>
+  <div class="gate-body hidden">
+    Any preventable booking error that becomes an on-road crisis is the Booking Owner's accountability.<br><br>
+    <strong>Triggers immediate escalation:</strong> Name mismatch on flight · missing visa · undisclosed special request denied on-road · rooming error causing hotel complaint · unreported medical need causing incident.
+  </div>
+</div>
+
+<div class="gate gate-stop" onclick="toggleGate(this)">
+  <div class="gate-header">
+    <i class="ti ti-ban" style="font-size:14px"></i>
+    <div class="gate-title">Non-negotiable violations (§26)</div>
+    <span class="gate-badge">Zero tolerance</span>
+    <span class="gate-chevron">›</span>
+  </div>
+  <div class="gate-body hidden">
+    <ul>
+      <li>Unrecorded discount or price given to customer</li>
+      <li>Verbal inclusion commitment not in writing</li>
+      <li>Booking marked confirmed without payment received</li>
+      <li>Dirty file pushed to Operations</li>
+      <li>Booking Owner responsibility transferred without documented handoff note</li>
+      <li>Agent booking confirmed without written terms</li>
+      <li>No visa feasibility confirmed for late Europe booking</li>
+      <li>Vouchers released with outstanding dues</li>
+    </ul>
+  </div>
+</div>
+
+<div class="gate gate-warn" onclick="toggleGate(this)">
+  <div class="gate-header">
+    <i class="ti ti-alert-triangle" style="font-size:14px"></i>
+    <div class="gate-title">Escalation process (§24)</div>
+    <span class="gate-badge">Process</span>
+    <span class="gate-chevron">›</span>
+  </div>
+  <div class="gate-body hidden">
+    Level 1: Booking Owner → Ops & Sales Control desk · 24hr resolution window<br>
+    Level 2: Ops & Sales Control → Management · 4hr escalation if unresolved<br>
+    Level 3: Management decision — final · documented in file<br><br>
+    <strong>§25 Booking Owner Scorecard</strong> tracks: errors per season · late collections · dirty handovers · customer complaints attributable to booking stage. Reviewed each season.
+  </div>
+</div>
+
+<div class="final-rule">
+  <strong>The simple rule from which everything else descends:</strong><br>
+  Sell clean · Book clean · Collect on time · Freeze early · Handover complete · Operate without surprises
+</div>
+</div>
+
+<script>
+function toggleDetail(id){
+  var el=document.getElementById(id);
+  if(el) el.classList.toggle('hidden');
+}
+function toggleGate(el){
+  var body=el.querySelector('.gate-body');
+  var chev=el.querySelector('.gate-chevron');
+  if(body) body.classList.toggle('hidden');
+  if(chev) chev.classList.toggle('open');
+}
+document.querySelectorAll('.gate-body').forEach(function(b){b.classList.add('hidden');});
+</script>
